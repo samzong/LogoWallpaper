@@ -1,0 +1,28 @@
+# macOS Finder metadata
+.DS_Store
+
+# User-specific Xcode settings
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.xcscmblueprint
+
+# Derived data and build products
+DerivedData/
+build/
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Packages/
+
+# Playgrounds and timelines
+timeline.xctimeline
+playground.xcworkspace/
+
+# Miscellaneous
+*.swp
+*.swo
+*.orig
+*.tmp

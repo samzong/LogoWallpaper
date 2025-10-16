@@ -27,6 +27,7 @@
 		17FA741D2EA09F720053766F /* LogoWallpaper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LogoWallpaper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		17FA742A2EA09F730053766F /* LogoWallpaperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LogoWallpaperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		17FA74342EA09F730053766F /* LogoWallpaperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LogoWallpaperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		17FA74652EA0A0F90053766F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +76,7 @@
 		17FA74142EA09F720053766F = {
 			isa = PBXGroup;
 			children = (
+				17FA74652EA0A0F90053766F /* Info.plist */,
 				17FA741F2EA09F720053766F /* LogoWallpaper */,
 				17FA742D2EA09F730053766F /* LogoWallpaperTests */,
 				17FA74372EA09F730053766F /* LogoWallpaperUITests */,
@@ -398,12 +400,15 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSDesktopFolderUsageDescription = "Desktop access is required to set your wallpaper.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.samzong.LogoWallpaper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -428,12 +433,15 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSDesktopFolderUsageDescription = "Desktop access is required to set your wallpaper.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.samzong.LogoWallpaper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
