@@ -21,7 +21,7 @@ Tweak colors, layout, and export settings to create wallpapers tailored to any d
 
 ## Demo
 
-<video src="https://github.com/samzong/LogoWallpaper/raw/main/demo.mp4" controls width="640" />
+[![Demo Video](demo-thumbnail.png)](https://github.com/samzong/LogoWallpaper/raw/main/demo.mp4)
 
 ## LICENSE
 
