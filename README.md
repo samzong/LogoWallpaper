@@ -18,3 +18,11 @@ LogoWallpaper is a SwiftUI macOS app for quickly generating clean brand wallpape
 - If your artwork is in SVG format, convert it to PNG with the free tool at <https://www.svgviewer.dev/svg-to-png>.
 
 Tweak colors, layout, and export settings to create wallpapers tailored to any display.
+
+## Demo
+
+![LogoWallpaper](https://raw.githubusercontent.com/samzong/LogoWallpaper/refs/heads/main/demo.gif)
+
+## LICENSE
+
+MIT.
