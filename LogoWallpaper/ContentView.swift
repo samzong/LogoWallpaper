@@ -37,7 +37,7 @@ struct ContentView: View {
                     .font(.headline)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Slider(value: $wallpaperGenerator.logoSize, in: 0.1...0.8)
+                    Slider(value: $wallpaperGenerator.logoSize, in: 0.1...0.96)
                     Text("Logo Size: \(Int(wallpaperGenerator.logoSize * 100))%")
                         .font(.caption)
                         .foregroundColor(.secondary)
