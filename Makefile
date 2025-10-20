@@ -16,7 +16,7 @@ help:
 	@echo "  clean-build Clean then perform a fresh Debug build."
 	@echo "  archive     Produce a Release archive at $(ARCHIVE_PATH)."
 
-build:
+build: test
 	xcodebuild -scheme $(SCHEME) -configuration Debug -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA_PATH) build
 
 release:
