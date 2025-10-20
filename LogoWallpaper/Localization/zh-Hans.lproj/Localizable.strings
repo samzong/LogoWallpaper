@@ -10,6 +10,9 @@
 /* Primary action button to generate the wallpaper */
 "Generate and Set Wallpaper" = "生成并设置壁纸";
 
+/* Secondary action button to export the generated wallpaper */
+"Save Wallpaper As" = "另存壁纸";
+
 /* Success alert title */
 "Success" = "成功";
 
@@ -19,11 +22,17 @@
 /* Success alert message */
 "Wallpaper updated successfully." = "壁纸更新成功。";
 
+/* Success alert message shown when exporting wallpaper succeeds */
+"Saved wallpaper to %@." = "壁纸已保存到 %@。";
+
 /* Error alert title */
 "Error" = "错误";
 
 /* Prompt when no image has been selected */
 "Select an image before generating." = "生成前请选择一张图片。";
+
+/* Prompt when attempting to export without selecting an image */
+"Select an image before exporting." = "导出前请选择一张图片。";
 
 /* Instructions inside drop zone */
 "Click or drop a transparent PNG logo" = "点击或拖放带透明通道的 PNG 徽标";
