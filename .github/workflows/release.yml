@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: macos-15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Resolve version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
+
+      - name: Build DMGs for Intel and Apple Silicon
+        run: |
+          set -o pipefail
+          make VERSION=${{ env.VERSION }} dmg
+
+      - name: Verify architecture slices
+        run: make check-arch
+
+      - name: Generate release notes
+        id: release_notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name='${{ env.VERSION }}' > generated_notes.json
+
+          jq -r '.body' generated_notes.json > release_notes.md
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.VERSION }}
+          body_path: release_notes.md
+          files: |
+            build/LogoWallpaper-x86_64.dmg
+            build/LogoWallpaper-arm64.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dispatch Homebrew tap update
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GH_PAT }}
+          event-type: trigger-homebrew-update
+          client-payload: '{"version": "${{ env.VERSION }}"}'

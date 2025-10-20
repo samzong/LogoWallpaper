@@ -11,6 +11,7 @@ xcuserdata/
 # Derived data and build products
 DerivedData/
 build/
+tmp/
 
 # Swift Package Manager
 .swiftpm/
