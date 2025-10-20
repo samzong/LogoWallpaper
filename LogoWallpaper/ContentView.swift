@@ -16,21 +16,12 @@ struct ContentView: View {
                 .padding(.top, 20)
 
             LogoDropView(
+                previewImage: wallpaperGenerator.previewImage,
+                backgroundColor: wallpaperGenerator.backgroundColor,
+                hasSelection: wallpaperGenerator.selectedImage != nil,
                 onImageDropped: handleDroppedImage,
                 onFailure: handleDropFailure
             )
-            .frame(height: 200)
-            .padding(.horizontal, 20)
-
-            if let image = wallpaperGenerator.selectedImage {
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxHeight: 180)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal, 20)
-                    .transition(.opacity)
-            }
 
             VStack(alignment: .leading, spacing: 12) {
                 Text("Configuration")

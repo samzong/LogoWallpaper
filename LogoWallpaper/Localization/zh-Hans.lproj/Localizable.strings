@@ -57,3 +57,12 @@
 
 /* Error when the background color cannot be resolved */
 "Background color is unavailable." = "背景颜色不可用。";
+
+/* Accessibility label describing the wallpaper preview image */
+"Wallpaper preview" = "壁纸预览图";
+
+/* Loading message shown while the preview is rendering */
+"Rendering preview…" = "正在渲染预览…";
+
+/* Accessibility label when the preview is still rendering */
+"Rendering preview" = "正在渲染预览";

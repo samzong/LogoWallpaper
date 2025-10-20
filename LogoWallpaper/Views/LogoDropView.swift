@@ -3,30 +3,46 @@ import UniformTypeIdentifiers
 import AppKit
 
 struct LogoDropView: View {
+    var previewImage: NSImage?
+    var backgroundColor: Color
+    var hasSelection: Bool
     var onImageDropped: (NSImage) -> Void
     var onFailure: ((String) -> Void)?
-    
+
     @State private var isTargeted = false
-    
+
+    private let cornerRadius: CGFloat = 20
+
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isTargeted ? Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(isTargeted ? Color.blue : Color.gray, style: StrokeStyle(lineWidth: 2, dash: [8]))
-                )
-            
-            VStack(spacing: 12) {
-                Image(systemName: "square.and.arrow.up.on.square")
-                    .font(.system(size: 44, weight: .medium))
-                    .foregroundColor(isTargeted ? .blue : .gray)
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(previewBackgroundColor)
+                .overlay {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .strokeBorder(borderColor, style: StrokeStyle(lineWidth: 2, dash: [10]))
+                }
 
-                Text("Click or drop a transparent PNG logo")
-                    .font(.body)
-                    .foregroundColor(.secondary)
+            if let previewImage {
+                Image(nsImage: previewImage)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(32)
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius - 6, style: .continuous))
+                    .accessibilityLabel(
+                        Text(
+                            String(
+                                localized: "Wallpaper preview",
+                                comment: "Accessibility label describing the wallpaper preview image"
+                            )
+                        )
+                    )
             }
+
+            overlayContent
         }
+        .frame(maxWidth: .infinity)
+        .frame(height: 260)
+        .padding(.horizontal, 20)
         .contentShape(Rectangle())
         .onDrop(of: acceptedTypeIdentifiers, isTargeted: $isTargeted) { providers in
             handleDrop(providers: providers)
@@ -34,6 +50,65 @@ struct LogoDropView: View {
         .onTapGesture {
             presentFilePicker()
         }
+        .animation(.easeInOut(duration: 0.18), value: isTargeted)
+        .animation(.easeInOut(duration: 0.18), value: previewImage == nil)
+    }
+
+    @ViewBuilder
+    private var overlayContent: some View {
+        if isTargeted {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(Color.accentColor.opacity(0.12))
+        }
+
+        if previewImage == nil {
+            VStack(spacing: 12) {
+                Image(systemName: hasSelection ? "hourglass.circle" : "square.and.arrow.up.on.square")
+                    .font(.system(size: 44, weight: .medium))
+                    .foregroundColor(isTargeted ? .accentColor : .secondary)
+
+                if hasSelection {
+                    Text(
+                        String(
+                            localized: "Rendering preview…",
+                            comment: "Loading message shown while the preview is rendering"
+                        )
+                    )
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel(
+                        Text(
+                            String(
+                                localized: "Rendering preview",
+                                comment: "Accessibility label when the preview is still rendering"
+                            )
+                        )
+                    )
+                } else {
+                    Text(
+                        String(
+                            localized: "Click or drop a transparent PNG logo",
+                            comment: "Instructions inside drop zone"
+                        )
+                    )
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                }
+            }
+            .padding()
+        }
+    }
+
+    private var previewBackgroundColor: Color {
+        if previewImage != nil {
+            return backgroundColor
+        }
+        return Color.secondary.opacity(0.08)
+    }
+
+    private var borderColor: Color {
+        isTargeted ? Color.accentColor : Color.primary.opacity(0.25)
     }
 
     private func handleDrop(providers: [NSItemProvider]) -> Bool {
