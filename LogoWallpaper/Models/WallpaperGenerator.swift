@@ -8,6 +8,11 @@ private struct PreviewInput {
     let backgroundColor: Color
 }
 
+private struct PixelSizeKey: Hashable {
+    let width: Int
+    let height: Int
+}
+
 class WallpaperGenerator: ObservableObject {
     @Published var logoSize: Double = 0.3
     @Published var backgroundColor: Color = .black
@@ -59,18 +64,33 @@ class WallpaperGenerator: ObservableObject {
                 try self.ensurePersistenceDirectoryExists()
 
                 var nextPersisted: [String: URL] = [:]
+                var cachedWallpapers: [PixelSizeKey: URL] = [:]
 
-                try screens.forEach { screen in
+                for screen in screens {
                     let screenKey = self.screenIdentifier(for: screen)
                     let targetSize = self.pixelSize(for: screen)
-                    let wallpaper = ImageProcessor.createWallpaperWithLogo(
-                        logo: image,
-                        backgroundColor: nsColor,
-                        screenSize: targetSize,
-                        logoSizeRatio: logoSizeRatio
+                    let cacheKey = PixelSizeKey(
+                        width: Int(round(targetSize.width)),
+                        height: Int(round(targetSize.height))
                     )
 
-                    let exportURL = try self.persistWallpaperImage(wallpaper, screenKey: screenKey)
+                    let exportURL: URL
+
+                    if let cachedURL = cachedWallpapers[cacheKey] {
+                        exportURL = cachedURL
+                    } else {
+                        let wallpaper = ImageProcessor.createWallpaperWithLogo(
+                            logo: image,
+                            backgroundColor: nsColor,
+                            screenSize: targetSize,
+                            logoSizeRatio: logoSizeRatio
+                        )
+
+                        let persistedURL = try self.persistWallpaperImage(wallpaper, screenKey: screenKey)
+                        cachedWallpapers[cacheKey] = persistedURL
+                        exportURL = persistedURL
+                    }
+
                     nextPersisted[screenKey] = exportURL
 
                     do {
