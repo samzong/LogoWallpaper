@@ -1,6 +1,9 @@
 name: PR Tests
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types:
       - opened
@@ -13,7 +16,7 @@ concurrency:
 
 jobs:
   build-tests:
-    name: Build Tests
+    name: Build and Coverage
     runs-on: macos-15
     timeout-minutes: 30
 
@@ -24,7 +27,29 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Run build tests
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Lint
+        run: make lint
+
+      - name: Run tests with coverage
         run: |
           set -o pipefail
-          make build
+          make coverage
+
+      - name: Install xcresultparser
+        run: |
+          brew install a7ex/homebrew-formulae/xcresultparser
+
+      - name: Convert xcresult to Cobertura XML
+        run: |
+          xcresultparser --output-format cobertura \
+            build/Coverage.xcresult > build/coverage.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: build/coverage.xml
+          fail_ci_if_error: true
+          verbose: true
