@@ -4,7 +4,7 @@ import AppKit
 
 struct LogoDropView: View {
     var onImageDropped: (NSImage) -> Void
-    var onFailure: ((String) -> Void)? = nil
+    var onFailure: ((String) -> Void)?
     
     @State private var isTargeted = false
     
