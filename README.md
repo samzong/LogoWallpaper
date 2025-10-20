@@ -3,6 +3,11 @@
 <div align="center">
   <img src="./LogoWallpaper/Assets.xcassets/AppIcon.appiconset/logo-256.png" alt="LogoWallpaper" width="128" />
   <br />
+  <div id="download-section" style="margin: 20px 0;">
+    <a href="#" onclick="downloadLatest(); return false;" style="text-decoration: none;">
+      <img src="https://img.shields.io/badge/⬇%20Download%20for%20Your%20System-28a745?style=for-the-badge&labelColor=28a745" alt="Download" />
+    </a>
+  </div>
   <p>A macOS app for quickly generating clean brand wallpapers.</p>
   <p>
     <a href="https://github.com/samzong/LogoWallpaper/releases"><img src="https://img.shields.io/github/v/release/samzong/LogoWallpaper" alt="Release" /></a>
