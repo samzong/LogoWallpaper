@@ -1,0 +1,76 @@
+# 📖 Simple document generation tool! Dependence Node.js run.
+# https://github.com/jaywcjlove/idoc
+
+name: idoc
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Create idoc config.
+        run: |
+          cat > idoc.yml << EOF
+          site: LogoWallpaper
+          description: LogoWallpaper is a SwiftUI macOS application for turning brand assets into polished wallpapers with customizable palettes, alignment, and export sizing.
+          keywords: macOS, wallpaper generator, SwiftUI, brand assets, drag and drop, logo, customizable backgrounds
+          favicon: LogoWallpaper/Assets.xcassets/AppIcon.appiconset/logo-256.png
+          logo: LogoWallpaper/Assets.xcassets/AppIcon.appiconset/logo-256.png
+
+          openSource: https://github.com/samzong/LogoWallpaper
+
+          tocs: false
+
+          element:
+            wrapper: style=max-width:720px;
+
+          menus:
+            Home: index.html
+            About:
+              url: https://github.com/samzong
+              target: __blank
+          cacheFileStat: true
+
+          footer: |
+            Copyright © {{idocYear}} <a href="https://github.com/samzong" target="_blank">samzong</a><br />
+            <script>
+              function downloadLatest() {
+                const platform = navigator.platform.toLowerCase();
+                const userAgent = navigator.userAgent.toLowerCase();
+
+                let downloadUrl = '';
+
+                if (platform.includes('mac')) {
+                  if (userAgent.includes('arm') || userAgent.includes('apple')) {
+                    downloadUrl = 'https://github.com/samzong/LogoWallpaper/releases/latest/download/LogoWallpaper-arm64.dmg';
+                  } else {
+                    downloadUrl = 'https://github.com/samzong/LogoWallpaper/releases/latest/download/LogoWallpaper-x86_64.dmg';
+                  }
+                } else {
+                  window.open('https://github.com/samzong/LogoWallpaper/releases/latest', '_blank');
+                  return;
+                }
+
+                window.location.href = downloadUrl;
+              }
+            </script>
+          EOF
+
+      - run: npm install idoc@1 -g
+      - run: idoc
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
