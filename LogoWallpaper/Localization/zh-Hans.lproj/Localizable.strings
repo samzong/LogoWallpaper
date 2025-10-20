@@ -66,3 +66,15 @@
 
 /* Accessibility label when the preview is still rendering */
 "Rendering preview" = "正在渲染预览";
+
+/* Fallback name when no display information is available */
+"Default Preview" = "默认预览";
+
+/* Fallback display name when system name is unavailable */
+"Display %d" = "显示器 %d";
+
+/* Picker label describing the preview selection control */
+"Preview" = "预览";
+
+/* Label describing the display picker overlay */
+"Displays" = "显示器";

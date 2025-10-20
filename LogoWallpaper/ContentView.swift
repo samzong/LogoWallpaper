@@ -16,7 +16,7 @@ struct ContentView: View {
                 .padding(.top, 20)
 
             LogoDropView(
-                previewImage: wallpaperGenerator.previewImage,
+                previews: wallpaperGenerator.previewVariants,
                 backgroundColor: wallpaperGenerator.backgroundColor,
                 hasSelection: wallpaperGenerator.selectedImage != nil,
                 onImageDropped: handleDroppedImage,

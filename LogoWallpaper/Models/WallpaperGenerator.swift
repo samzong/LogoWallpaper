@@ -13,11 +13,28 @@ private struct PixelSizeKey: Hashable {
     let height: Int
 }
 
+struct WallpaperPreviewVariant: Identifiable, Equatable {
+    let id: String
+    let image: NSImage
+    let title: String
+    let subtitle: String
+}
+
 class WallpaperGenerator: ObservableObject {
     @Published var logoSize: Double = 0.3
     @Published var backgroundColor: Color = .black
     @Published var selectedImage: NSImage?
     @Published private(set) var previewImage: NSImage?
+    @Published private(set) var previewVariants: [WallpaperPreviewVariant] = []
+
+    private struct PreviewTarget {
+        let id: String
+        let pixelSize: NSSize
+        let title: String
+        let subtitle: String
+    }
+
+    private static let defaultPreviewPixelSize = NSSize(width: 1600, height: 900)
 
     private let fileManager = FileManager.default
     private let fileQueue = DispatchQueue(label: "com.logowallpaper.generator.files")
@@ -141,48 +158,152 @@ class WallpaperGenerator: ObservableObject {
                 )
             }
             .receive(on: previewQueue)
-            .map { [weak self] input -> NSImage? in
+            .map { [weak self] input -> [WallpaperPreviewVariant] in
                 guard
                     let self = self,
                     let input = input,
                     let nsColor = try? Self.makeNSColor(from: input.backgroundColor)
                 else {
-                    return nil
+                    return []
                 }
 
-                let targetSize = self.previewCanvasSize()
-                return ImageProcessor.createWallpaperWithLogo(
-                    logo: input.image,
-                    backgroundColor: nsColor,
-                    screenSize: targetSize,
-                    logoSizeRatio: input.logoSize
-                )
+                let targets = self.previewTargets()
+
+                return targets.map { target in
+                    let canvasSize = self.previewCanvasSize(for: target.pixelSize)
+                    let previewImage = ImageProcessor.createWallpaperWithLogo(
+                        logo: input.image,
+                        backgroundColor: nsColor,
+                        screenSize: canvasSize,
+                        logoSizeRatio: input.logoSize
+                    )
+
+                    return WallpaperPreviewVariant(
+                        id: target.id,
+                        image: previewImage,
+                        title: target.title,
+                        subtitle: target.subtitle
+                    )
+                }
             }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] preview in
+            .sink { [weak self] previews in
                 guard let self else { return }
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    self.previewImage = preview
+                    self.previewVariants = previews
+                    self.previewImage = previews.first?.image
                 }
             }
             .store(in: &cancellables)
     }
 
-    private func previewCanvasSize() -> NSSize {
-        if let screen = NSScreen.main {
-            let base = pixelSize(for: screen)
-            let maxDimension: CGFloat = 1600
-            let largestSide = max(base.width, base.height)
+    private func previewCanvasSize(for pixelSize: NSSize) -> NSSize {
+        let maxDimension: CGFloat = 1600
+        let largestSide = max(pixelSize.width, pixelSize.height)
 
-            guard largestSide > maxDimension else {
-                return base
-            }
-
-            let scale = maxDimension / largestSide
-            return NSSize(width: base.width * scale, height: base.height * scale)
+        guard largestSide > maxDimension else {
+            return pixelSize
         }
 
-        return NSSize(width: 1600, height: 900)
+        let scale = maxDimension / largestSide
+        return NSSize(width: pixelSize.width * scale, height: pixelSize.height * scale)
+    }
+
+    private func previewTargets() -> [PreviewTarget] {
+        let screens = targetScreens()
+        var seenPixelSizes: Set<PixelSizeKey> = []
+        var targets: [PreviewTarget] = []
+
+        for (index, screen) in screens.enumerated() {
+            let pixelSize = pixelSize(for: screen)
+            let key = PixelSizeKey(
+                width: Int(round(pixelSize.width)),
+                height: Int(round(pixelSize.height))
+            )
+
+            guard !seenPixelSizes.contains(key) else { continue }
+            seenPixelSizes.insert(key)
+
+            let identifier = screenIdentifier(for: screen)
+            let title = screenTitle(for: screen, defaultIndex: index)
+            let subtitle = previewSubtitle(for: pixelSize)
+
+            targets.append(
+                PreviewTarget(
+                    id: identifier,
+                    pixelSize: pixelSize,
+                    title: title,
+                    subtitle: subtitle
+                )
+            )
+        }
+
+        if targets.isEmpty {
+            let pixelSize = Self.defaultPreviewPixelSize
+            targets.append(
+                PreviewTarget(
+                    id: "default-preview",
+                    pixelSize: pixelSize,
+                    title: String(
+                        localized: "Default Preview",
+                        comment: "Fallback name when no display information is available"
+                    ),
+                    subtitle: previewSubtitle(for: pixelSize)
+                )
+            )
+        }
+
+        return targets
+    }
+
+    private func screenTitle(for screen: NSScreen, defaultIndex: Int) -> String {
+        if #available(macOS 11.0, *) {
+            let trimmed = screen.localizedName.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return trimmed
+            }
+        }
+
+        let format = String(
+            localized: "Display %d",
+            comment: "Fallback display name when system name is unavailable"
+        )
+        return String(format: format, defaultIndex + 1)
+    }
+
+    private func previewSubtitle(for pixelSize: NSSize) -> String {
+        let roundedWidth = Int(round(pixelSize.width))
+        let roundedHeight = Int(round(pixelSize.height))
+        let resolution = "\(roundedWidth)×\(roundedHeight)"
+
+        guard let aspectRatioText = aspectRatioString(width: roundedWidth, height: roundedHeight) else {
+            return resolution
+        }
+
+        return "\(resolution) · \(aspectRatioText)"
+    }
+
+    private func aspectRatioString(width: Int, height: Int) -> String? {
+        guard width > 0, height > 0 else { return nil }
+        let divisor = greatestCommonDivisor(width, height)
+        guard divisor > 0 else { return nil }
+
+        let simplifiedWidth = width / divisor
+        let simplifiedHeight = height / divisor
+        return "\(simplifiedWidth):\(simplifiedHeight)"
+    }
+
+    private func greatestCommonDivisor(_ a: Int, _ b: Int) -> Int {
+        var a = abs(a)
+        var b = abs(b)
+
+        while b != 0 {
+            let remainder = a % b
+            a = b
+            b = remainder
+        }
+
+        return a
     }
 
     private func persistWallpaperImage(_ image: NSImage, screenKey: String) throws -> URL {
