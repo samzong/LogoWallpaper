@@ -57,3 +57,12 @@
 
 /* Error when the background color cannot be resolved */
 "Background color is unavailable." = "Background color is unavailable.";
+
+/* Accessibility label describing the wallpaper preview image */
+"Wallpaper preview" = "Wallpaper preview";
+
+/* Loading message shown while the preview is rendering */
+"Rendering preview…" = "Rendering preview…";
+
+/* Accessibility label when the preview is still rendering */
+"Rendering preview" = "Rendering preview";
