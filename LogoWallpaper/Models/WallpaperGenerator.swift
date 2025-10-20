@@ -141,13 +141,26 @@ enum WallpaperError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .imageConversionFailed:
-            return "Image conversion failed."
+            return String(
+                localized: "Image conversion failed.",
+                comment: "Error when the generated wallpaper could not be converted to PNG"
+            )
         case .setWallpaperFailed(let message):
-            return "Failed to set wallpaper: \(message)"
+            let template = String(
+                localized: "Failed to set wallpaper: %@",
+                comment: "Error when macOS fails to apply the generated wallpaper with a specific reason"
+            )
+            return String(format: template, message)
         case .noScreenAvailable:
-            return "No available display detected."
+            return String(
+                localized: "No available display detected.",
+                comment: "Error when no monitors are detected while generating wallpaper"
+            )
         case .backgroundColorUnavailable:
-            return "Background color is unavailable."
+            return String(
+                localized: "Background color is unavailable.",
+                comment: "Error when the selected background color cannot be used"
+            )
         }
     }
 }

@@ -99,7 +99,10 @@ struct ContentView: View {
 
     private func generateWallpaperFromSelected() {
         guard let image = wallpaperGenerator.selectedImage else {
-            errorMessage = "Select an image before generating."
+            errorMessage = String(
+                localized: "Select an image before generating.",
+                comment: "Prompt when attempting to generate a wallpaper without selecting an image"
+            )
             showErrorAlert = true
             return
         }
