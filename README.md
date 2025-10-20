@@ -48,6 +48,14 @@ Tweak colors, layout, and export settings to create wallpapers tailored to any d
    ```
 4. Follow the project coding style, add focused unit tests under `LogoWallpaperTests/`, and reference any related issues in your pull request body.
 
+## Community Resources
+
+- [Contributing Guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+- [Issue Templates](.github/ISSUE_TEMPLATE)
+- [Pull Request Template](.github/pull_request_template.md)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

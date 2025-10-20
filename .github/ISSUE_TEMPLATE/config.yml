@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature idea or question
+    url: https://github.com/samzong/LogoWallpaper/discussions/new
+    about: Share product ideas or ask general questions in Discussions before filing an issue.
+  - name: Security report
+    url: https://github.com/samzong/LogoWallpaper/security/policy
+    about: Review the security policy for private reporting instructions.

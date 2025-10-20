@@ -1,0 +1,58 @@
+name: Bug Report
+description: Report a reproducible problem with LogoWallpaper.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve LogoWallpaper! Please share as much detail as possible so we can reproduce the issue.
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Checklist
+      description: Tick the boxes that apply.
+      options:
+        - label: I am using the latest LogoWallpaper build from `main` or the most recent release.
+          required: true
+        - label: I have validated the issue is not covered by an existing open issue.
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the current behavior and what you expected instead.
+      placeholder: When I drop a PNG logo the app crashes…
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Steps to Reproduce
+      description: Provide precise steps, including assets or settings used when possible.
+      placeholder: |
+        1. Launch LogoWallpaper
+        2. Drop the attached logo
+        3. Observe the crash
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Crash Logs or Console Output
+      description: Paste relevant excerpts (remove secrets). Attach files via drag-and-drop if they are long.
+      render: shell
+  - type: input
+    id: env_version
+    attributes:
+      label: App Version / Commit SHA
+      placeholder: e.g. v0.4.1 or 2f4c1d8
+  - type: input
+    id: environment
+    attributes:
+      label: macOS Version & Hardware
+      placeholder: e.g. macOS 15.0.1 (24A348) on M2 Max
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional Context
+      description: Screenshots, sample assets, or workaround ideas.

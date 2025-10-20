@@ -1,0 +1,44 @@
+name: Feature Request
+description: Suggest a new idea or enhancement for LogoWallpaper.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make LogoWallpaper better? Share the context so we can evaluate and shape the work together.
+  - type: checkboxes
+    id: viability
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues and discussions to confirm this request is new.
+          required: true
+        - label: I am willing to help design or implement the change.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Provide a one-paragraph overview of the problem and the desired outcome.
+      placeholder: I want to export wallpapers with a custom DPI because…
+    validations:
+      required: true
+  - type: textarea
+    id: user_value
+    attributes:
+      label: User Value
+      description: Who benefits from this feature? How does it improve their workflow?
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Outline UI/UX expectations, configuration knobs, or implementation notes. Sketches and screenshots are welcome.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: List any workarounds or other options you explored.
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / Risks
+      description: Note build, asset, or tooling considerations we should evaluate while scoping this feature.
