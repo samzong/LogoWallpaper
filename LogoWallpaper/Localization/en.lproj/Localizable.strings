@@ -10,6 +10,9 @@
 /* Primary action button to generate the wallpaper */
 "Generate and Set Wallpaper" = "Generate and Set Wallpaper";
 
+/* Secondary action button to export the generated wallpaper */
+"Save Wallpaper As" = "Save Wallpaper As";
+
 /* Success alert title */
 "Success" = "Success";
 
@@ -19,11 +22,17 @@
 /* Success alert message */
 "Wallpaper updated successfully." = "Wallpaper updated successfully.";
 
+/* Success alert message shown when exporting wallpaper succeeds */
+"Saved wallpaper to %@." = "Saved wallpaper to %@.";
+
 /* Error alert title */
 "Error" = "Error";
 
 /* Prompt when no image has been selected */
 "Select an image before generating." = "Select an image before generating.";
+
+/* Prompt when attempting to export without selecting an image */
+"Select an image before exporting." = "Select an image before exporting.";
 
 /* Instructions inside drop zone */
 "Click or drop a transparent PNG logo" = "Click or drop a transparent PNG logo";

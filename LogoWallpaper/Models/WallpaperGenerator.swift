@@ -293,31 +293,88 @@ class WallpaperGenerator: ObservableObject {
         return "\(simplifiedWidth):\(simplifiedHeight)"
     }
 
-    private func greatestCommonDivisor(_ a: Int, _ b: Int) -> Int {
-        var a = abs(a)
-        var b = abs(b)
+    private func greatestCommonDivisor(_ first: Int, _ second: Int) -> Int {
+        var firstValue = abs(first)
+        var secondValue = abs(second)
 
-        while b != 0 {
-            let remainder = a % b
-            a = b
-            b = remainder
+        while secondValue != 0 {
+            let remainder = firstValue % secondValue
+            firstValue = secondValue
+            secondValue = remainder
         }
 
-        return a
+        return firstValue
     }
 
     private func persistWallpaperImage(_ image: NSImage, screenKey: String) throws -> URL {
-        guard let tiffData = image.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData),
-              let pngData = bitmap.representation(using: .png, properties: [:]) else {
-            throw WallpaperError.imageConversionFailed
-        }
+        let pngData = try Self.pngData(from: image)
 
         let filename = "wallpaper-\(screenKey)-\(UUID().uuidString).png"
         let destination = persistenceDirectory.appendingPathComponent(filename, isDirectory: false)
 
         try pngData.write(to: destination, options: .atomic)
         return destination
+    }
+
+    func exportWallpaper(to destinationURL: URL, completion: @escaping (Result<URL, Error>) -> Void) {
+        guard let sourceImage = selectedImage else {
+            DispatchQueue.main.async {
+                completion(.failure(WallpaperError.noImageSelected))
+            }
+            return
+        }
+
+        let logoSizeRatio = logoSize
+        let desiredBackground = backgroundColor
+        let targetSize = targetScreens().first.map { pixelSize(for: $0) } ?? Self.defaultPreviewPixelSize
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let nsColor = try Self.makeNSColor(from: desiredBackground)
+                let wallpaper = ImageProcessor.createWallpaperWithLogo(
+                    logo: sourceImage,
+                    backgroundColor: nsColor,
+                    screenSize: targetSize,
+                    logoSizeRatio: logoSizeRatio
+                )
+
+                let finalURL = Self.finalExportURL(from: destinationURL)
+                let pngData = try Self.pngData(from: wallpaper)
+                try pngData.write(to: finalURL, options: .atomic)
+
+                DispatchQueue.main.async {
+                    completion(.success(finalURL))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+
+    private static func finalExportURL(from url: URL) -> URL {
+        let currentExtension = url.pathExtension.lowercased()
+
+        guard !currentExtension.isEmpty else {
+            return url.appendingPathExtension("png")
+        }
+
+        if currentExtension == "png" {
+            return url
+        }
+
+        return url.deletingPathExtension().appendingPathExtension("png")
+    }
+
+    private static func pngData(from image: NSImage) throws -> Data {
+        guard let tiffData = image.tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiffData),
+              let pngData = bitmap.representation(using: .png, properties: [:]) else {
+            throw WallpaperError.imageConversionFailed
+        }
+
+        return pngData
     }
 
     private static func makeNSColor(from color: Color) throws -> NSColor {
@@ -402,6 +459,7 @@ enum WallpaperError: LocalizedError {
     case setWallpaperFailed(String)
     case noScreenAvailable
     case backgroundColorUnavailable
+    case noImageSelected
 
     var errorDescription: String? {
         switch self {
@@ -425,6 +483,11 @@ enum WallpaperError: LocalizedError {
             return String(
                 localized: "Background color is unavailable.",
                 comment: "Error when the selected background color cannot be used"
+            )
+        case .noImageSelected:
+            return String(
+                localized: "Select an image before exporting.",
+                comment: "Error shown when attempting to export without a selected image"
             )
         }
     }
