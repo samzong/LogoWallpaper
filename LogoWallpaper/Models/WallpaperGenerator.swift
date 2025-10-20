@@ -8,6 +8,7 @@ class WallpaperGenerator: ObservableObject {
     @Published var selectedImage: NSImage?
 
     private let fileManager = FileManager.default
+    private let fileQueue = DispatchQueue(label: "com.logowallpaper.generator.files")
     private lazy var persistenceDirectory: URL = {
         let base = fileManager.urls(
             for: .applicationSupportDirectory,
@@ -16,6 +17,10 @@ class WallpaperGenerator: ObservableObject {
         return base.appendingPathComponent("LogoWallpaper", isDirectory: true)
     }()
     private var persistedWallpapers: [String: URL] = [:]
+
+    init() {
+        cleanupPersistenceDirectory()
+    }
 
     func generateWallpaper(from image: NSImage, completion: @escaping (Result<Void, Error>) -> Void) {
         DispatchQueue.main.async {
@@ -32,6 +37,7 @@ class WallpaperGenerator: ObservableObject {
 
         let logoSizeRatio = logoSize
         let desiredBackground = backgroundColor
+        let previousPersisted = fileQueue.sync { persistedWallpapers }
 
         DispatchQueue.global(qos: .userInitiated).async {
             do {
@@ -39,7 +45,10 @@ class WallpaperGenerator: ObservableObject {
 
                 try self.ensurePersistenceDirectoryExists()
 
+                var nextPersisted: [String: URL] = [:]
+
                 try screens.forEach { screen in
+                    let screenKey = self.screenIdentifier(for: screen)
                     let targetSize = self.pixelSize(for: screen)
                     let wallpaper = ImageProcessor.createWallpaperWithLogo(
                         logo: image,
@@ -48,7 +57,8 @@ class WallpaperGenerator: ObservableObject {
                         logoSizeRatio: logoSizeRatio
                     )
 
-                    let exportURL = try self.persistWallpaperImage(wallpaper, for: screen)
+                    let exportURL = try self.persistWallpaperImage(wallpaper, screenKey: screenKey)
+                    nextPersisted[screenKey] = exportURL
 
                     do {
                         try NSWorkspace.shared.setDesktopImageURL(exportURL, for: screen, options: [:])
@@ -57,10 +67,24 @@ class WallpaperGenerator: ObservableObject {
                     }
                 }
 
+                self.fileQueue.sync {
+                    self.persistedWallpapers = nextPersisted
+                }
+
+                let keepSet = Set(nextPersisted.values)
+                self.cleanupPersistenceDirectory(keeping: keepSet)
+
                 DispatchQueue.main.async {
                     completion(.success(()))
                 }
             } catch {
+                self.fileQueue.sync {
+                    self.persistedWallpapers = previousPersisted
+                }
+
+                let keepSet = Set(previousPersisted.values)
+                self.cleanupPersistenceDirectory(keeping: keepSet)
+
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
@@ -72,24 +96,17 @@ class WallpaperGenerator: ObservableObject {
         return NSScreen.screens
     }
 
-    private func persistWallpaperImage(_ image: NSImage, for screen: NSScreen) throws -> URL {
+    private func persistWallpaperImage(_ image: NSImage, screenKey: String) throws -> URL {
         guard let tiffData = image.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: tiffData),
               let pngData = bitmap.representation(using: .png, properties: [:]) else {
             throw WallpaperError.imageConversionFailed
         }
 
-        let screenKey = screenIdentifier(for: screen)
         let filename = "wallpaper-\(screenKey)-\(UUID().uuidString).png"
         let destination = persistenceDirectory.appendingPathComponent(filename, isDirectory: false)
 
         try pngData.write(to: destination, options: .atomic)
-
-        if let previousURL = persistedWallpapers[screenKey], previousURL != destination {
-            try? fileManager.removeItem(at: previousURL)
-        }
-
-        persistedWallpapers[screenKey] = destination
         return destination
     }
 
@@ -105,6 +122,44 @@ class WallpaperGenerator: ObservableObject {
         #endif
 
         throw WallpaperError.backgroundColorUnavailable
+    }
+
+    private func cleanupPersistenceDirectory(keeping keep: Set<URL> = []) {
+        fileQueue.sync {
+            guard fileManager.fileExists(atPath: persistenceDirectory.path) else {
+                if keep.isEmpty {
+                    persistedWallpapers.removeAll()
+                } else {
+                    persistedWallpapers = persistedWallpapers.filter { keep.contains($0.value) }
+                }
+                return
+            }
+
+            do {
+                let contents = try fileManager.contentsOfDirectory(
+                    at: persistenceDirectory,
+                    includingPropertiesForKeys: nil,
+                    options: .skipsHiddenFiles
+                )
+
+                contents.forEach { url in
+                    guard !keep.contains(url) else { return }
+                    do {
+                        try fileManager.removeItem(at: url)
+                    } catch {
+                        NSLog("LogoWallpaper cleanup failed for %@: %@", url.path, error.localizedDescription)
+                    }
+                }
+            } catch {
+                NSLog("LogoWallpaper directory listing failed: %@", error.localizedDescription)
+            }
+
+            if keep.isEmpty {
+                persistedWallpapers.removeAll()
+            } else {
+                persistedWallpapers = persistedWallpapers.filter { keep.contains($0.value) }
+            }
+        }
     }
 
     private func ensurePersistenceDirectoryExists() throws {
