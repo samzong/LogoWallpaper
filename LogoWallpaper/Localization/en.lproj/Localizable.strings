@@ -1,0 +1,59 @@
+/* Section title for configuration controls */
+"Configuration" = "Configuration";
+
+/* Slider helper text showing selected logo size percentage */
+"Logo Size: %lld%%" = "Logo Size: %lld%%";
+
+/* Label for selecting the wallpaper background color */
+"Background Color" = "Background Color";
+
+/* Primary action button to generate the wallpaper */
+"Generate and Set Wallpaper" = "Generate and Set Wallpaper";
+
+/* Success alert title */
+"Success" = "Success";
+
+/* Default dismiss button label */
+"OK" = "OK";
+
+/* Success alert message */
+"Wallpaper updated successfully." = "Wallpaper updated successfully.";
+
+/* Error alert title */
+"Error" = "Error";
+
+/* Prompt when no image has been selected */
+"Select an image before generating." = "Select an image before generating.";
+
+/* Instructions inside drop zone */
+"Click or drop a transparent PNG logo" = "Click or drop a transparent PNG logo";
+
+/* Failure message when the file URL cannot be read */
+"Could not read file URL." = "Could not read file URL.";
+
+/* Failure message when the dropped item is not an image */
+"Could not load the image." = "Could not load the image.";
+
+/* Failure message when the dropped resource is not a transparent PNG */
+"Only transparent PNG images are supported." = "Only transparent PNG images are supported.";
+
+/* Failure message when the user selects an SVG file */
+"SVG files are not supported. Please choose a transparent PNG image." = "SVG files are not supported. Please choose a transparent PNG image.";
+
+/* Failure message when the image cannot be processed */
+"Could not process the image. Ensure it is a transparent PNG." = "Could not process the image. Ensure it is a transparent PNG.";
+
+/* Failure message when the selected image lacks transparency */
+"The image is missing transparency. Export a transparent PNG first." = "The image is missing transparency. Export a transparent PNG first.";
+
+/* Generic image conversion error */
+"Image conversion failed." = "Image conversion failed.";
+
+/* Error when macOS cannot set the wallpaper */
+"Failed to set wallpaper: %@" = "Failed to set wallpaper: %@";
+
+/* Error when no display is available */
+"No available display detected." = "No available display detected.";
+
+/* Error when the background color cannot be resolved */
+"Background color is unavailable." = "Background color is unavailable.";

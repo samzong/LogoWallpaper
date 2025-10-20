@@ -1,0 +1,59 @@
+/* Section title for configuration controls */
+"Configuration" = "配置";
+
+/* Slider helper text showing selected logo size percentage */
+"Logo Size: %lld%%" = "Logo 大小：%lld%%";
+
+/* Label for selecting the wallpaper background color */
+"Background Color" = "背景颜色";
+
+/* Primary action button to generate the wallpaper */
+"Generate and Set Wallpaper" = "生成并设置壁纸";
+
+/* Success alert title */
+"Success" = "成功";
+
+/* Default dismiss button label */
+"OK" = "确定";
+
+/* Success alert message */
+"Wallpaper updated successfully." = "壁纸更新成功。";
+
+/* Error alert title */
+"Error" = "错误";
+
+/* Prompt when no image has been selected */
+"Select an image before generating." = "生成前请选择一张图片。";
+
+/* Instructions inside drop zone */
+"Click or drop a transparent PNG logo" = "点击或拖放带透明通道的 PNG 徽标";
+
+/* Failure message when the file URL cannot be read */
+"Could not read file URL." = "无法读取文件 URL。";
+
+/* Failure message when the dropped item is not an image */
+"Could not load the image." = "无法加载该图片。";
+
+/* Failure message when the dropped resource is not a transparent PNG */
+"Only transparent PNG images are supported." = "仅支持带透明通道的 PNG 图片。";
+
+/* Failure message when the user selects an SVG file */
+"SVG files are not supported. Please choose a transparent PNG image." = "不支持 SVG 文件。请选择带透明通道的 PNG 图片。";
+
+/* Failure message when the image cannot be processed */
+"Could not process the image. Ensure it is a transparent PNG." = "无法处理该图片。请确保它是带透明通道的 PNG。";
+
+/* Failure message when the selected image lacks transparency */
+"The image is missing transparency. Export a transparent PNG first." = "该图片缺少透明通道。请先导出带透明通道的 PNG。";
+
+/* Generic image conversion error */
+"Image conversion failed." = "图片转换失败。";
+
+/* Error when macOS cannot set the wallpaper */
+"Failed to set wallpaper: %@" = "设置壁纸失败：%@";
+
+/* Error when no display is available */
+"No available display detected." = "未检测到可用的显示器。";
+
+/* Error when the background color cannot be resolved */
+"Background color is unavailable." = "背景颜色不可用。";

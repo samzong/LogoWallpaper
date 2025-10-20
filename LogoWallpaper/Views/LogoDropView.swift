@@ -44,7 +44,10 @@ struct LogoDropView: View {
         if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
             provider.loadObject(ofClass: URL.self) { url, _ in
                 guard let url = url else {
-                    notifyFailure(message: "Could not read file URL.")
+                    notifyFailure(message: String(
+                        localized: "Could not read file URL.",
+                        comment: "Error shown when the dropped item lacks a readable file URL"
+                    ))
                     return
                 }
 
@@ -56,7 +59,10 @@ struct LogoDropView: View {
         if provider.canLoadObject(ofClass: NSImage.self) {
             provider.loadObject(ofClass: NSImage.self) { object, _ in
                 guard let image = object as? NSImage else {
-                    notifyFailure(message: "Could not load the image.")
+                    notifyFailure(message: String(
+                        localized: "Could not load the image.",
+                        comment: "Error shown when an image provider fails to load"
+                    ))
                     return
                 }
 
@@ -65,7 +71,10 @@ struct LogoDropView: View {
             return true
         }
 
-        notifyFailure(message: "Only transparent PNG images are supported.")
+        notifyFailure(message: String(
+            localized: "Only transparent PNG images are supported.",
+            comment: "Error shown when the dropped item is not a transparent PNG"
+        ))
         return false
     }
 
@@ -95,13 +104,19 @@ struct LogoDropView: View {
 
     private func processFileURL(_ url: URL) {
         if url.pathExtension.lowercased() == "svg" {
-            notifyFailure(message: "SVG files are not supported. Please choose a transparent PNG image.")
+            notifyFailure(message: String(
+                localized: "SVG files are not supported. Please choose a transparent PNG image.",
+                comment: "Error shown when the user selects an SVG file"
+            ))
             return
         }
 
         DispatchQueue.global(qos: .userInitiated).async {
             guard let image = ImageProcessor.loadImage(from: url) else {
-                notifyFailure(message: "Could not process the image. Ensure it is a transparent PNG.")
+                notifyFailure(message: String(
+                    localized: "Could not process the image. Ensure it is a transparent PNG.",
+                    comment: "Error shown when the image data cannot be processed"
+                ))
                 return
             }
 
@@ -111,7 +126,10 @@ struct LogoDropView: View {
 
     private func processLoadedImage(_ image: NSImage) {
         guard ImageProcessor.imageHasAlpha(image) else {
-            notifyFailure(message: "The image is missing transparency. Export a transparent PNG first.")
+            notifyFailure(message: String(
+                localized: "The image is missing transparency. Export a transparent PNG first.",
+                comment: "Error shown when the selected image lacks transparency"
+            ))
             return
         }
 
