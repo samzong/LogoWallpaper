@@ -1,6 +1,7 @@
 SCHEME ?= LogoWallpaper
 DESTINATION ?= platform=macOS
 ARCHIVE_PATH ?= build/LogoWallpaper.xcarchive
+DERIVED_DATA_PATH ?= build
 
 .PHONY: help build release test test-all clean clean-build archive
 
@@ -16,16 +17,16 @@ help:
 	@echo "  archive     Produce a Release archive at $(ARCHIVE_PATH)."
 
 build:
-	xcodebuild -scheme $(SCHEME) -configuration Debug -destination '$(DESTINATION)' build
+	xcodebuild -scheme $(SCHEME) -configuration Debug -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA_PATH) build
 
 release:
-	xcodebuild -scheme $(SCHEME) -configuration Release -destination '$(DESTINATION)' build
+	xcodebuild -scheme $(SCHEME) -configuration Release -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA_PATH) build
 
 test:
-	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' -only-testing:$(SCHEME)Tests test
+	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA_PATH) -only-testing:$(SCHEME)Tests test
 
 test-all:
-	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' test
+	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA_PATH) test
 
 clean:
 	xcodebuild -scheme $(SCHEME) clean
