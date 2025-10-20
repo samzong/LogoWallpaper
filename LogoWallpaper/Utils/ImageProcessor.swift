@@ -34,7 +34,12 @@ class ImageProcessor {
         return newImage
     }
     
-    static func createWallpaperWithLogo(logo: NSImage, backgroundColor: NSColor, screenSize: NSSize, logoSizeRatio: Double) -> NSImage {
+    static func createWallpaperWithLogo(
+        logo: NSImage,
+        backgroundColor: NSColor,
+        screenSize: NSSize,
+        logoSizeRatio: Double
+    ) -> NSImage {
         let wallpaperImage = NSImage(size: screenSize)
         wallpaperImage.lockFocus()
 

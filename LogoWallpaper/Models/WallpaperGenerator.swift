@@ -9,7 +9,10 @@ class WallpaperGenerator: ObservableObject {
 
     private let fileManager = FileManager.default
     private lazy var persistenceDirectory: URL = {
-        let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? fileManager.temporaryDirectory
+        let base = fileManager.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first ?? fileManager.temporaryDirectory
         return base.appendingPathComponent("LogoWallpaper", isDirectory: true)
     }()
     private var persistedWallpapers: [String: URL] = [:]

@@ -6,6 +6,7 @@ BUILD_DIR ?= build
 DERIVED_DATA_PATH ?= $(BUILD_DIR)
 CONFIGURATION ?= Release
 ARCHIVE_PATH ?= $(BUILD_DIR)/$(APP_NAME).xcarchive
+SWIFTLINT ?= swiftlint
 
 ARCHES := x86_64 arm64
 DMG_VOLUME_NAME = $(APP_NAME)
@@ -39,7 +40,7 @@ CASK_TOKEN = logo-wallpaper
 CASK_FILE = Casks/$(CASK_TOKEN).rb
 BRANCH_NAME = update-$(CASK_TOKEN)-$(MARKETING_SEMVER)
 
-.PHONY: help build release test test-all clean clean-build archive dmg check-arch version update-homebrew $(foreach arch,$(ARCHES),build-$(arch))
+.PHONY: help build release test test-all clean clean-build archive dmg check-arch version update-homebrew lint $(foreach arch,$(ARCHES),build-$(arch))
 
 help:
 	@echo "Usage: make <target>"
@@ -55,6 +56,7 @@ help:
 	@echo "  check-arch      Validate architecture slices in archived binaries."
 	@echo "  version         Print resolved version metadata."
 	@echo "  update-homebrew GH_PAT=token  Update samzong/homebrew-tap cask."
+	@echo "  lint            Run SwiftLint using .swiftlint.yml."
 
 build: test
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration Debug -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA_PATH) build
@@ -159,6 +161,10 @@ version:
 	@echo "Marketing SemVer:    $(MARKETING_SEMVER)"
 	@echo "Build Number:        $(BUILD_NUMBER)"
 	@echo "Git Commit:          $(GIT_COMMIT)"
+
+lint:
+	@command -v $(SWIFTLINT) >/dev/null 2>&1 || { echo "❌ SwiftLint not installed. Install via 'brew install swiftlint'."; exit 127; }
+	@$(SWIFTLINT) --config .swiftlint.yml
 
 update-homebrew:
 	@echo "==> Starting Homebrew cask update process..."

@@ -7,7 +7,7 @@
 
 import XCTest
 
-final class LogoWallpaperUITestsLaunchTests: XCTestCase {
+class LogoWallpaperUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
