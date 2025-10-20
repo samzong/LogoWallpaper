@@ -3,55 +3,101 @@ import UniformTypeIdentifiers
 import AppKit
 
 struct LogoDropView: View {
-    var previewImage: NSImage?
+    var previews: [WallpaperPreviewVariant]
     var backgroundColor: Color
     var hasSelection: Bool
     var onImageDropped: (NSImage) -> Void
     var onFailure: ((String) -> Void)?
 
     @State private var isTargeted = false
+    @State private var selectedPreviewID: WallpaperPreviewVariant.ID?
 
     private let cornerRadius: CGFloat = 20
 
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(previewBackgroundColor)
-                .overlay {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(borderColor, style: StrokeStyle(lineWidth: 2, dash: [10]))
-                }
+    private var selectedPreview: WallpaperPreviewVariant? {
+        if let id = selectedPreviewID,
+           let preview = previews.first(where: { $0.id == id }) {
+            return preview
+        }
+        return previews.first
+    }
 
-            if let previewImage {
-                Image(nsImage: previewImage)
-                    .resizable()
-                    .scaledToFit()
-                    .padding(32)
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius - 6, style: .continuous))
-                    .accessibilityLabel(
-                        Text(
-                            String(
-                                localized: "Wallpaper preview",
-                                comment: "Accessibility label describing the wallpaper preview image"
+    private var pickerSelection: Binding<String> {
+        Binding(
+            get: {
+                if let current = selectedPreview?.id {
+                    return current
+                }
+                if let fallback = previews.first?.id {
+                    selectedPreviewID = fallback
+                    return fallback
+                }
+                return ""
+            },
+            set: { newValue in
+                selectedPreviewID = newValue
+            }
+        )
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(previewBackgroundColor)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .strokeBorder(borderColor, style: StrokeStyle(lineWidth: 2, dash: [10]))
+                    }
+
+                if let image = selectedPreview?.image {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(32)
+                        .clipShape(RoundedRectangle(cornerRadius: cornerRadius - 6, style: .continuous))
+                        .accessibilityLabel(
+                            Text(
+                                String(
+                                    localized: "Wallpaper preview",
+                                    comment: "Accessibility label describing the wallpaper preview image"
+                                )
                             )
                         )
-                    )
+                }
+
+                overlayContent
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 260)
+            .contentShape(Rectangle())
+            .onDrop(of: acceptedTypeIdentifiers, isTargeted: $isTargeted) { providers in
+                handleDrop(providers: providers)
+            }
+            .onTapGesture {
+                presentFilePicker()
+            }
+            .animation(.easeInOut(duration: 0.18), value: isTargeted)
+            .animation(.easeInOut(duration: 0.18), value: selectedPreview == nil)
+            .overlay(alignment: .topTrailing) {
+                previewSelectionOverlay
             }
 
-            overlayContent
+            if let preview = selectedPreview {
+                previewDetails(for: preview)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 260)
         .padding(.horizontal, 20)
-        .contentShape(Rectangle())
-        .onDrop(of: acceptedTypeIdentifiers, isTargeted: $isTargeted) { providers in
-            handleDrop(providers: providers)
+        .onAppear {
+            selectedPreviewID = selectedPreviewID ?? previews.first?.id
         }
-        .onTapGesture {
-            presentFilePicker()
+        .onChange(of: previews) { newValue in
+            let availableIDs = Set(newValue.map(\.id))
+            if let current = selectedPreviewID, availableIDs.contains(current) {
+                return
+            }
+            selectedPreviewID = newValue.first?.id
         }
-        .animation(.easeInOut(duration: 0.18), value: isTargeted)
-        .animation(.easeInOut(duration: 0.18), value: previewImage == nil)
     }
 
     @ViewBuilder
@@ -61,7 +107,7 @@ struct LogoDropView: View {
                 .fill(Color.accentColor.opacity(0.12))
         }
 
-        if previewImage == nil {
+        if selectedPreview == nil {
             VStack(spacing: 12) {
                 Image(systemName: hasSelection ? "hourglass.circle" : "square.and.arrow.up.on.square")
                     .font(.system(size: 44, weight: .medium))
@@ -100,8 +146,18 @@ struct LogoDropView: View {
         }
     }
 
+    @ViewBuilder
+    private func previewDetails(for preview: WallpaperPreviewVariant) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(preview.subtitle)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var previewBackgroundColor: Color {
-        if previewImage != nil {
+        if selectedPreview != nil {
             return backgroundColor
         }
         return Color.secondary.opacity(0.08)
@@ -109,6 +165,66 @@ struct LogoDropView: View {
 
     private var borderColor: Color {
         isTargeted ? Color.accentColor : Color.primary.opacity(0.25)
+    }
+
+    @ViewBuilder
+    private var previewSelectionOverlay: some View {
+        if let preview = selectedPreview {
+            HStack(spacing: 10) {
+                Label {
+                    Text(
+                        String(
+                            localized: "Displays",
+                            comment: "Label describing the display picker overlay"
+                        )
+                    )
+                    .font(.caption.weight(.semibold))
+                } icon: {
+                    Image(systemName: "display")
+                        .font(.caption)
+                }
+
+                if previews.count > 1 {
+                    if previews.count <= 3 {
+                        Picker("", selection: pickerSelection) {
+                            ForEach(previews) { variant in
+                                Text(variant.title).tag(variant.id)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                    } else {
+                        Picker("", selection: pickerSelection) {
+                            ForEach(previews) { variant in
+                                Text(variant.title).tag(variant.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(maxWidth: 180)
+                    }
+                } else {
+                    Text(preview.title)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                Group {
+                    if #available(macOS 12.0, *) {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(.regularMaterial)
+                    } else {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.black.opacity(0.3))
+                    }
+                }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 6)
+            .padding(12)
+        }
     }
 
     private func handleDrop(providers: [NSItemProvider]) -> Bool {

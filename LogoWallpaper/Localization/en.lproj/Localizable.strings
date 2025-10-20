@@ -66,3 +66,15 @@
 
 /* Accessibility label when the preview is still rendering */
 "Rendering preview" = "Rendering preview";
+
+/* Fallback name when no display information is available */
+"Default Preview" = "Default Preview";
+
+/* Fallback display name when system name is unavailable */
+"Display %d" = "Display %d";
+
+/* Picker label describing the preview selection control */
+"Preview" = "Preview";
+
+/* Label describing the display picker overlay */
+"Displays" = "Displays";
