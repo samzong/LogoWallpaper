@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  RELEASE_TAG: ${{ github.ref_name }}
+
 jobs:
   release:
     name: Create Release
@@ -17,51 +20,53 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
+      - name: Verify SemVer tag and tracked Info.plist
+        id: version
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)\.(0|[1-9][0-9]*))?$ ]]; then
+            echo "::error::Invalid release tag: $RELEASE_TAG"
+            exit 1
+          fi
+          version="${RELEASE_TAG#v}"
+          core="${version%%-*}"
+          plist_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)"
+          if [[ "$plist_version" != "$core" ]]; then
+            echo "::error::Info.plist version $plist_version does not match release core $core"
+            exit 1
+          fi
+          is_prerelease=false
+          if [[ "$version" == *-* ]]; then
+            is_prerelease=true
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$is_prerelease" >> "$GITHUB_OUTPUT"
+
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
 
-      - name: Resolve version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
-
       - name: Build DMGs for Intel and Apple Silicon
-        run: |
-          set -o pipefail
-          make VERSION=${{ env.VERSION }} dmg
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: make dmg VERSION="$VERSION"
 
       - name: Verify architecture slices
         run: make check-arch
 
-      - name: Generate release notes
-        id: release_notes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/releases/generate-notes \
-            -f tag_name='${{ env.VERSION }}' > generated_notes.json
-
-          jq -r '.body' generated_notes.json > release_notes.md
-
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: ${{ env.VERSION }}
-          body_path: release_notes.md
-          files: |
-            build/LogoWallpaper-x86_64.dmg
-            build/LogoWallpaper-arm64.dmg
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Dispatch Homebrew tap update
-        if: success()
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.GH_PAT }}
-          event-type: trigger-homebrew-update
-          client-payload: '{"version": "${{ env.VERSION }}"}'
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          IS_PRERELEASE: ${{ steps.version.outputs.is_prerelease }}
+        run: |
+          set -euo pipefail
+          args=(--verify-tag --generate-notes --title "$RELEASE_TAG")
+          if [[ "$IS_PRERELEASE" == true ]]; then
+            args+=(--prerelease --latest=false)
+          fi
+          gh release create "$RELEASE_TAG" \
+            "build/LogoWallpaper-${VERSION}-x86_64.dmg" \
+            "build/LogoWallpaper-${VERSION}-arm64.dmg" \
+            "${args[@]}"

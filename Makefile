@@ -13,22 +13,9 @@ DMG_VOLUME_NAME = $(APP_NAME)
 DMG_LABEL_x86_64 = Intel
 DMG_LABEL_arm64 = Apple Silicon
 
-# Version information
 GIT_COMMIT := $(shell git rev-parse --short HEAD)
-ifndef VERSION
-VERSION := $(shell git describe --tags --always)
-endif
-
-ifndef MARKETING_SEMVER
-MARKETING_SEMVER := $(shell \
-	VERSION_STR="$(VERSION)"; \
-	CLEAN=$$(echo $$VERSION_STR | sed -E 's/^v//; s/-.*//'); \
-	if echo $$CLEAN | grep -Eq '^[0-9]+(\.[0-9]+){0,2}$$'; then \
-		echo $$CLEAN; \
-	else \
-		echo 0.0.0; \
-	fi)
-endif
+VERSION ?= $(shell /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)
+MARKETING_SEMVER ?= $(firstword $(subst -, ,$(VERSION)))
 
 ifndef BUILD_NUMBER
 BUILD_NUMBER := $(shell git rev-list --count HEAD)
@@ -126,13 +113,13 @@ dmg: $(foreach arch,$(ARCHES),build-$(arch))
 		hdiutil create -volname "$$(printf "%s (%s)" "$(DMG_VOLUME_NAME)" "$$vol_label")" \
 			-srcfolder "$(BUILD_DIR)/tmp-$$arch" \
 			-ov -format UDZO \
-			"$(BUILD_DIR)/$(APP_NAME)-$$arch.dmg"; \
+			"$(BUILD_DIR)/$(APP_NAME)-$(VERSION)-$$arch.dmg"; \
 		rm -rf "$(BUILD_DIR)/tmp-$$arch" "$(BUILD_DIR)/$$arch"; \
 	done
 	@$(MAKE) --no-print-directory check-arch
 	@echo "==> All DMG files have been created:"
 	@for arch in $(ARCHES); do \
-		echo "    - $$arch DMG: $(BUILD_DIR)/$(APP_NAME)-$$arch.dmg"; \
+		echo "    - $$arch DMG: $(BUILD_DIR)/$(APP_NAME)-$(VERSION)-$$arch.dmg"; \
 	done
 	@echo ""
 	@echo "DMGs are self-signed; users may need to approve them in System Settings."
@@ -181,8 +168,8 @@ update-homebrew:
 	@rm -rf tmp && mkdir -p tmp
 
 	@echo "==> Downloading DMG files..."
-	@curl -L -o tmp/$(APP_NAME)-x86_64.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(MARKETING_SEMVER)/$(APP_NAME)-x86_64.dmg"
-	@curl -L -o tmp/$(APP_NAME)-arm64.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(MARKETING_SEMVER)/$(APP_NAME)-arm64.dmg"
+	@curl -L -o tmp/$(APP_NAME)-x86_64.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(VERSION)/$(APP_NAME)-$(VERSION)-x86_64.dmg"
+	@curl -L -o tmp/$(APP_NAME)-arm64.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(VERSION)/$(APP_NAME)-$(VERSION)-arm64.dmg"
 
 	@echo "==> Calculating SHA256 checksums..."
 	@X86_64_SHA256=$$(shasum -a 256 tmp/$(APP_NAME)-x86_64.dmg | cut -d ' ' -f 1) && echo "    - x86_64 SHA256: $$X86_64_SHA256"

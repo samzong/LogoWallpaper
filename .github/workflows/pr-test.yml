@@ -28,3 +28,15 @@ jobs:
         run: |
           set -o pipefail
           make build
+
+      - name: Run the full test suite
+        run: make test-all
+
+      - name: Build and verify DMGs
+        run: |
+          set -euo pipefail
+          make dmg
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)"
+          for arch in x86_64 arm64; do
+            hdiutil verify "build/LogoWallpaper-${version}-${arch}.dmg"
+          done
